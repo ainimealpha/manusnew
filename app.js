@@ -3,13 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeTags = new Set();
     let activeRarity = 'all';
 
-    // 1. Loading Screen
+    // 1. Decorative Loading Screen
     const loader = document.getElementById('loading-screen');
     if (loader) {
         setTimeout(() => {
             loader.style.opacity = '0';
-            setTimeout(() => loader.style.display = 'none', 600);
-        }, 1200);
+            setTimeout(() => loader.style.display = 'none', 800);
+        }, 1800);
     }
 
     // 2. Page Router
@@ -28,12 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderGallery(characters);
         setupDrawer();
 
-        // Search Event
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            filterData();
-        });
+        document.getElementById('search-input').addEventListener('input', () => filterData());
 
-        // Rarity Filter Event
         document.querySelectorAll('.chip[data-rarity]').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelector('.chip[data-rarity].active').classList.remove('active');
@@ -42,10 +38,18 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Apply Filter Button
         document.getElementById('apply-filter').addEventListener('click', () => {
             filterData();
             closeDrawer();
+        });
+
+        document.getElementById('reset-filter').addEventListener('click', () => {
+            activeTags.clear();
+            activeRarity = 'all';
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            document.querySelector('.chip[data-rarity="all"]').classList.add('active');
+            document.getElementById('search-input').value = '';
+            filterData();
         });
     }
 
@@ -53,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const drawer = document.getElementById('filter-drawer');
         const toggle = document.getElementById('filter-toggle');
         const close = document.getElementById('close-drawer');
-
         toggle.onclick = () => drawer.classList.add('open');
         close.onclick = () => drawer.classList.remove('open');
         window.closeDrawer = () => drawer.classList.remove('open');
@@ -63,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const tagsList = document.getElementById('tags-list');
         const allTags = new Set();
         characters.forEach(char => char.tags.forEach(tag => allTags.add(tag)));
-
         allTags.forEach(tag => {
             const tagEl = document.createElement('div');
             tagEl.className = 'chip';
@@ -79,16 +81,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function filterData() {
         const searchTerm = document.getElementById('search-input').value.toLowerCase();
-        
         const filtered = characters.filter(char => {
             const matchesSearch = char.name.toLowerCase().includes(searchTerm) || 
                                 char.nickname.toLowerCase().includes(searchTerm);
             const matchesRarity = activeRarity === 'all' || char.rarity === activeRarity;
             const matchesTags = activeTags.size === 0 || [...activeTags].every(t => char.tags.includes(t));
-            
             return matchesSearch && matchesRarity && matchesTags;
         });
-
         renderGallery(filtered);
     }
 
@@ -101,12 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('selectedCharId', char.id);
                 window.location.href = 'detail.html';
             };
-
             card.innerHTML = `
                 <img src="${char.mainImage}" alt="${char.name}" loading="lazy">
                 <div class="card-overlay">
                     <div class="card-name">${char.name}</div>
-                    <div class="card-rarity rarity-${char.rarity}">${char.rarity}</div>
+                    <div class="card-rarity">${char.rarity}</div>
                 </div>
             `;
             galleryGrid.appendChild(card);
@@ -123,77 +121,77 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="${char.mainImage}" class="hero-img">
                 <div class="hero-mask"></div>
             </section>
-            
             <section class="info-section">
                 <div class="detail-title">
                     <h1>${char.name}</h1>
                     <p>"${char.nickname}"</p>
-                    <div class="card-rarity rarity-${char.rarity}" style="font-size: 0.8rem; padding: 5px 15px;">RANK ${char.rarity}</div>
+                    <div class="card-rarity" style="font-size: 0.8rem; padding: 5px 15px;">RANK ${char.rarity}</div>
                 </div>
-
                 <div class="tags-chips" style="margin-top: 20px;">
                     ${char.tags.map(t => `<span class="chip active">${t}</span>`).join('')}
                 </div>
-
-                <div class="story-text">
-                    ${char.story}
-                </div>
-
+                <div class="story-text">${char.story}</div>
                 <div class="carousel-section">
-                    <div class="carousel-container" id="carousel">
-                        <img src="${char.extraImages[0]}" class="carousel-item side-left" data-pos="0">
-                        <img src="${char.mainImage}" class="carousel-item active" data-pos="1">
-                        <img src="${char.extraImages[1]}" class="carousel-item side-right" data-pos="2">
-                    </div>
-                    <p style="text-align:center; font-size: 0.7rem; color: var(--text-dim); margin-top: 20px; letter-spacing: 2px;">TAP CENTER TO ENLARGE • SWIPE TO ROTATE</p>
+                    <h3 class="gallery-title">GALLERY</h3>
+                    <div class="carousel-container" id="carousel"></div>
                 </div>
             </section>
         `;
 
-        setupCarousel();
+        setupInfiniteCarousel(char);
+        setupAutoHideNav();
         setupModal();
     }
 
-    function setupCarousel() {
-        const items = document.querySelectorAll('.carousel-item');
-        let activeIndex = 1; // Center is active by default
+    function setupInfiniteCarousel(char) {
+        const container = document.getElementById('carousel');
+        const images = [char.extraImages[0], char.mainImage, char.extraImages[1]];
+        let currentIndex = 1;
 
-        items.forEach((item, index) => {
-            item.onclick = () => {
-                if (item.classList.contains('active')) {
-                    openModal(item.src);
+        function renderCarousel() {
+            container.innerHTML = '';
+            images.forEach((src, i) => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = 'carousel-item';
+                if (i === currentIndex) {
+                    img.classList.add('active');
+                    img.onclick = () => openModal(src);
                 } else {
-                    rotateCarousel(index);
+                    img.classList.add(i < currentIndex ? 'side-left' : 'side-right');
+                    img.classList.add('side');
+                    img.onclick = () => {
+                        currentIndex = i;
+                        renderCarousel();
+                    };
                 }
-            };
-        });
-
-        function rotateCarousel(newActiveIndex) {
-            items.forEach(item => {
-                item.classList.remove('active', 'side-left', 'side-right');
+                container.appendChild(img);
             });
-
-            items[newActiveIndex].classList.add('active');
-            
-            // Simple rotation logic for 3 items
-            const leftIndex = (newActiveIndex + 2) % 3;
-            const rightIndex = (newActiveIndex + 1) % 3;
-            
-            items[leftIndex].classList.add('side-left');
-            items[rightIndex].classList.add('side-right');
         }
+        renderCarousel();
+    }
+
+    function setupAutoHideNav() {
+        const nav = document.getElementById('auto-hide-nav');
+        let lastScrollY = window.scrollY;
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > lastScrollY && window.scrollY > 100) {
+                nav.classList.add('nav-hidden');
+            } else {
+                nav.classList.remove('nav-hidden');
+            }
+            lastScrollY = window.scrollY;
+        });
     }
 
     function setupModal() {
         const modal = document.getElementById('image-modal');
         const modalImg = document.getElementById('modal-img');
         const closeBtn = document.querySelector('.close-modal');
-
         window.openModal = (src) => {
             modal.style.display = "flex";
             modalImg.src = src;
         };
-
         closeBtn.onclick = () => modal.style.display = "none";
         window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
     }

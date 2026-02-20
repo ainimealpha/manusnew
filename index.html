@@ -8,17 +8,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="theme-red">
-    <!-- Loading Screen -->
+    <!-- Decorative Loading Screen -->
     <div id="loading-screen">
-        <div class="loader-content">
-            <div class="magic-ring"></div>
-            <h2 class="loading-text">INITIALIZING CODEX</h2>
+        <div class="loader-container">
+            <div class="ornament-top"></div>
+            <div class="magic-circle-outer"></div>
+            <div class="magic-circle-inner"></div>
+            <div class="loading-text">INITIALIZING CODEX</div>
+            <div class="ornament-bottom"></div>
         </div>
     </div>
 
     <header class="minimal-header">
         <div class="logo-area">
-            <h1>CODEX<span>WIKI</span></h1>
+            <!-- Logo Button Feature -->
+            <button onclick="window.location.href='https://github.com'" class="logo-btn">
+                <h1>CODEX<span>WIKI</span></h1>
+            </button>
         </div>
         <div class="action-area">
             <div class="search-minimal">
@@ -29,12 +35,16 @@
         </div>
     </header>
 
-    <!-- Filter Drawer (Hidden by default) -->
+    <!-- Filter Drawer -->
     <div id="filter-drawer" class="drawer">
         <div class="drawer-content">
             <div class="drawer-header">
                 <h3>FILTERS</h3>
-                <button id="close-drawer" class="icon-btn"><i class="fas fa-times"></i></button>
+                <div class="drawer-actions">
+                    <!-- Reset Filter Button with Trash Icon -->
+                    <button id="reset-filter" class="icon-btn trash-btn" title="Reset All"><i class="fas fa-trash-alt"></i></button>
+                    <button id="close-drawer" class="icon-btn"><i class="fas fa-times"></i></button>
+                </div>
             </div>
             
             <div class="filter-group">
