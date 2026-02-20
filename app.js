@@ -8,11 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loader) {
         setTimeout(() => {
             loader.style.opacity = '0';
-            setTimeout(() => loader.style.display = 'none', 500);
-        }, 1500);
+            setTimeout(() => loader.style.display = 'none', 600);
+        }, 1200);
     }
 
-    // 2. Initialize Page
+    // 2. Page Router
     const galleryGrid = document.getElementById('gallery-grid');
     const detailContent = document.getElementById('detail-content');
 
@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function initGallery() {
         renderTags();
         renderGallery(characters);
+        setupDrawer();
 
         // Search Event
         document.getElementById('search-input').addEventListener('input', (e) => {
@@ -33,14 +34,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Rarity Filter Event
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+        document.querySelectorAll('.chip[data-rarity]').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelector('.filter-btn.active').classList.remove('active');
+                document.querySelector('.chip[data-rarity].active').classList.remove('active');
                 btn.classList.add('active');
                 activeRarity = btn.dataset.rarity;
-                filterData();
             });
         });
+
+        // Apply Filter Button
+        document.getElementById('apply-filter').addEventListener('click', () => {
+            filterData();
+            closeDrawer();
+        });
+    }
+
+    function setupDrawer() {
+        const drawer = document.getElementById('filter-drawer');
+        const toggle = document.getElementById('filter-toggle');
+        const close = document.getElementById('close-drawer');
+
+        toggle.onclick = () => drawer.classList.add('open');
+        close.onclick = () => drawer.classList.remove('open');
+        window.closeDrawer = () => drawer.classList.remove('open');
     }
 
     function renderTags() {
@@ -49,14 +65,13 @@ document.addEventListener('DOMContentLoaded', () => {
         characters.forEach(char => char.tags.forEach(tag => allTags.add(tag)));
 
         allTags.forEach(tag => {
-            const tagEl = document.createElement('span');
-            tagEl.className = 'tag';
+            const tagEl = document.createElement('div');
+            tagEl.className = 'chip';
             tagEl.textContent = tag;
             tagEl.onclick = () => {
                 tagEl.classList.toggle('active');
                 if (activeTags.has(tag)) activeTags.delete(tag);
                 else activeTags.add(tag);
-                filterData();
             };
             tagsList.appendChild(tagEl);
         });
@@ -88,12 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             card.innerHTML = `
-                <div class="thumb-container">
-                    <img src="${char.mainImage}" alt="${char.name}" loading="lazy">
-                </div>
-                <div class="char-info">
-                    <div class="char-name">${char.name}</div>
-                    <div class="rarity-badge rarity-${char.rarity}">${char.rarity}</div>
+                <img src="${char.mainImage}" alt="${char.name}" loading="lazy">
+                <div class="card-overlay">
+                    <div class="card-name">${char.name}</div>
+                    <div class="card-rarity rarity-${char.rarity}">${char.rarity}</div>
                 </div>
             `;
             galleryGrid.appendChild(card);
@@ -106,39 +119,69 @@ document.addEventListener('DOMContentLoaded', () => {
         const char = characters.find(c => c.id == charId) || characters[0];
 
         detailContent.innerHTML = `
-            <div class="main-image-container">
-                <img src="${char.mainImage}" alt="${char.name}" id="main-view">
-            </div>
+            <section class="hero-section">
+                <img src="${char.mainImage}" class="hero-img">
+                <div class="hero-mask"></div>
+            </section>
             
-            <div class="detail-info">
-                <div class="detail-header">
-                    <h1 class="detail-name">${char.name}</h1>
-                    <p class="detail-nickname">"${char.nickname}"</p>
-                    <div class="rarity-badge rarity-${char.rarity}" style="font-size: 1.2rem">RANK ${char.rarity}</div>
+            <section class="info-section">
+                <div class="detail-title">
+                    <h1>${char.name}</h1>
+                    <p>"${char.nickname}"</p>
+                    <div class="card-rarity rarity-${char.rarity}" style="font-size: 0.8rem; padding: 5px 15px;">RANK ${char.rarity}</div>
                 </div>
 
-                <div class="tags-container">
-                    ${char.tags.map(t => `<span class="tag active">${t}</span>`).join('')}
+                <div class="tags-chips" style="margin-top: 20px;">
+                    ${char.tags.map(t => `<span class="chip active">${t}</span>`).join('')}
                 </div>
 
-                <div class="story-box">
-                    <h3>STORY</h3>
-                    <p>${char.story}</p>
+                <div class="story-text">
+                    ${char.story}
                 </div>
 
-                <div class="extra-images-section">
-                    <h3>GALLERY</h3>
-                    <div class="slider-container">
-                        <img src="${char.extraImages[0]}" class="extra-img" onclick="openModal(this.src)">
-                        <img src="${char.mainImage}" class="extra-img center" onclick="openModal(this.src)">
-                        <img src="${char.extraImages[1]}" class="extra-img" onclick="openModal(this.src)">
+                <div class="carousel-section">
+                    <div class="carousel-container" id="carousel">
+                        <img src="${char.extraImages[0]}" class="carousel-item side-left" data-pos="0">
+                        <img src="${char.mainImage}" class="carousel-item active" data-pos="1">
+                        <img src="${char.extraImages[1]}" class="carousel-item side-right" data-pos="2">
                     </div>
-                    <p style="text-align:center; font-size: 0.8rem; color: #888; margin-top: 10px;">Tap image to enlarge</p>
+                    <p style="text-align:center; font-size: 0.7rem; color: var(--text-dim); margin-top: 20px; letter-spacing: 2px;">TAP CENTER TO ENLARGE • SWIPE TO ROTATE</p>
                 </div>
-            </div>
+            </section>
         `;
 
+        setupCarousel();
         setupModal();
+    }
+
+    function setupCarousel() {
+        const items = document.querySelectorAll('.carousel-item');
+        let activeIndex = 1; // Center is active by default
+
+        items.forEach((item, index) => {
+            item.onclick = () => {
+                if (item.classList.contains('active')) {
+                    openModal(item.src);
+                } else {
+                    rotateCarousel(index);
+                }
+            };
+        });
+
+        function rotateCarousel(newActiveIndex) {
+            items.forEach(item => {
+                item.classList.remove('active', 'side-left', 'side-right');
+            });
+
+            items[newActiveIndex].classList.add('active');
+            
+            // Simple rotation logic for 3 items
+            const leftIndex = (newActiveIndex + 2) % 3;
+            const rightIndex = (newActiveIndex + 1) % 3;
+            
+            items[leftIndex].classList.add('side-left');
+            items[rightIndex].classList.add('side-right');
+        }
     }
 
     function setupModal() {
@@ -152,8 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         closeBtn.onclick = () => modal.style.display = "none";
-        window.onclick = (event) => {
-            if (event.target == modal) modal.style.display = "none";
-        };
+        window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
     }
 });
