@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Codex Gallery - RPG Wiki</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="theme-red">
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader-content">
+            <div class="magic-circle"></div>
+            <h2 class="loading-text">LOADING CODEX...</h2>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <h1>ANIME CODEX</h1>
+            <p class="subtitle">Fantasy RPG Wikipedia</p>
+        </div>
+    </header>
+
+    <main>
+        <!-- Search & Filter Section -->
+        <section class="filter-section">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Cari karakter...">
+            </div>
+            
+            <div class="tags-container" id="tags-list">
+                <!-- Tags will be injected here -->
+            </div>
+
+            <div class="rarity-filter">
+                <button class="filter-btn active" data-rarity="all">ALL</button>
+                <button class="filter-btn" data-rarity="S">S</button>
+                <button class="filter-btn" data-rarity="A">A</button>
+                <button class="filter-btn" data-rarity="B">B</button>
+                <button class="filter-btn" data-rarity="C">C</button>
+                <button class="filter-btn" data-rarity="D">D</button>
+                <button class="filter-btn" data-rarity="E">E</button>
+            </div>
+        </section>
+
+        <!-- Gallery Grid -->
+        <section class="gallery-container">
+            <div class="grid-3" id="gallery-grid">
+                <!-- Character cards will be injected here -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Anime Codex RPG. Built for GitHub.io</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

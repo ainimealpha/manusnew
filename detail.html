@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Detail - Anime Codex</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="theme-red detail-page">
+    <nav class="top-nav">
+        <button onclick="window.location.href='index.html'" class="nav-btn"><i class="fas fa-arrow-left"></i> BACK</button>
+        <button onclick="window.location.href='https://github.com'" class="nav-btn"><i class="fas fa-home"></i> HOME</button>
+    </nav>
+
+    <main id="detail-content">
+        <!-- Content will be injected by JS -->
+        <div class="loading-placeholder">Loading character data...</div>
+    </main>
+
+    <!-- Popup Modal for Extra Images -->
+    <div id="image-modal" class="modal">
+        <span class="close-modal">&times;</span>
+        <img class="modal-content" id="modal-img">
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
